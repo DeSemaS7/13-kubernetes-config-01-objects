@@ -48,7 +48,7 @@ spec:
 
 ```
 
-Для базы данных был описан statefull set с выделением persistent volume:
+Для базы данных был описан sts с выделением persistent volume:
 ```yaml
 apiVersion: apps/v1
 kind: StatefulSet
@@ -113,3 +113,85 @@ spec:
 ```
 ниже вывод запущенных подов:
 ![task1](task1.png)
+
+
+# Задание 2: подготовить конфиг для production окружения
+Разбил общий конфиг на два деплоймента и добавил кастомные env с именами сервисов:
+<br>frontend:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: front
+  name: front
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: front
+  template:
+    metadata:
+      labels:
+        app: front
+    spec:
+      containers:
+        - image: praqma/network-multitool
+          imagePullPolicy: IfNotPresent
+          name: front
+          env:
+          - name: BACKEND_ADDR
+            value: back
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: front
+  namespace: default
+spec:
+  ports:
+    - name: front
+      port: 80
+  selector:
+    app: front
+```
+<br>backend:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: back
+  name: back
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: back
+  template:
+    metadata:
+      labels:
+        app: back
+    spec:
+      containers:
+        - image: praqma/network-multitool
+          imagePullPolicy: IfNotPresent
+          name: back
+          env:
+          - name: DB_ADDR
+            value: postgres      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: back
+  namespace: default
+spec:
+  ports:
+    - name: back
+      port: 80
+  selector:
+    app: back
+```
