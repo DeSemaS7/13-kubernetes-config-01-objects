@@ -112,4 +112,4 @@ spec:
    app: postgres
 ```
 ниже вывод запущенных подов:
-![task1.png](task1)
+![task1](task1.png)
